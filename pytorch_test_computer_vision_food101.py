@@ -40,6 +40,16 @@ torch.manual_seed(42)
 batch_size_args = [int(item.strip()) for item in args.batch_sizes.split(",")]
 
 ### Set constants ###
+CPU_PROCESSOR = None
+### Get CPU Processor name ###
+if not CPU_PROCESSOR:
+    try:
+        import cpuinfo
+        CPU_PROCESSOR = cpuinfo.get_cpu_info().get("brand_raw").replace(" ", "_")
+        print(f"[INFO] CPU Processor: {CPU_PROCESSOR}")
+    except Exception as e:
+        print(f"Error: {e}, may have failed to get CPU_PROCESSOR name from cpuinfo, please install cpuinfo or set CPU_PROCESSOR manually") 
+
 GPU_NAME = get_nvidia_gpu_name()
 BACKEND = "pytorch"
 MODEL_NAME = "resnet50"
@@ -321,16 +331,6 @@ def main(rank, gpu_count):
         # Prevent torch from erroring with too many files open (happens on M3)
         # See: https://github.com/pytorch/pytorch/issues/11201, https://github.com/CVMI-Lab/PLA/issues/20 
         torch.multiprocessing.set_sharing_strategy('file_system')
-
-    ### Get CPU Processor name ###
-    CPU_PROCESSOR = None
-    if not CPU_PROCESSOR:
-        try:
-            import cpuinfo
-            CPU_PROCESSOR = cpuinfo.get_cpu_info().get("brand_raw").replace(" ", "_")
-            print(f"[INFO] CPU Processor: {CPU_PROCESSOR}")
-        except Exception as e:
-            print(f"Error: {e}, may have failed to get CPU_PROCESSOR name from cpuinfo, please install cpuinfo or set CPU_PROCESSOR manually") 
     
     ### Prepare Data Functions ### 
     print(f"[INFO] Preparing {DATASET_NAME} dataset, note: this dataset requires 5GB+ of storage, so may take a while to download... (remember to delete ./data afterwards if you want to free up space)")
